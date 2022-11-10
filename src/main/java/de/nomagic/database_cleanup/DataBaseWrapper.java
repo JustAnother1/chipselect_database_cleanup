@@ -14,7 +14,6 @@ public class DataBaseWrapper
 
     public DataBaseWrapper()
     {
-        // TODO Auto-generated constructor stub
     }
 
     public void commit()
@@ -89,7 +88,5 @@ public class DataBaseWrapper
     {
         stmt.executeUpdate(sql);
     }
-
-
 
 }

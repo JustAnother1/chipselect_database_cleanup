@@ -2,6 +2,7 @@ package de.nomagic.database_cleanup;
 
 import de.nomagic.database_cleanup.checks.BasicCheck;
 import de.nomagic.database_cleanup.checks.CheckAlternativeUsages;
+import de.nomagic.database_cleanup.checks.CheckPeripherals;
 import de.nomagic.database_cleanup.checks.CleanupStrings;
 import de.nomagic.database_cleanup.checks.RAMandFlashSizes;
 import de.nomagic.database_cleanup.checks.RemoveOrphans;
@@ -12,11 +13,10 @@ public class CleanupMain
     private String dbUser;
     private String dbPassword;
     private boolean verbose = false;
-    
+
     public CleanupMain()
     {
     }
-
 
     private void parseConfig(String[] args)
     {
@@ -62,22 +62,23 @@ public class CleanupMain
         db.connectToDataBase(dbLocation, dbUser, dbPassword);
 
         BasicCheck[] allTest = {
-        		new RAMandFlashSizes(verbose, db),
-        		new RemoveOrphans(verbose, db),
-        		new CleanupStrings(verbose, db),
-        		new CheckAlternativeUsages(verbose, db),
-        		};
-        
+                new RAMandFlashSizes(verbose, db),
+                new RemoveOrphans(verbose, db),
+                new CleanupStrings(verbose, db),
+                new CheckAlternativeUsages(verbose, db),
+                new CheckPeripherals(verbose, db),
+                };
+
         for(int i = 0; i < allTest.length; i++)
         {
-        	BasicCheck curCheck = allTest[i];
-        	run = curCheck.execute();
+            BasicCheck curCheck = allTest[i];
+            run = curCheck.execute();
             global_comparisions += curCheck.getNumberComparissons();
             global_fixes += curCheck.getFixes();
             global_inconsistencies += curCheck.getInconsistencies();
             if(false == run)
             {
-            	break;
+                break;
             }
         }
 
@@ -89,10 +90,9 @@ public class CleanupMain
                 + "fixes: %,d (%3.2f %%)\n"
                 + "inconsistencies: %,d (%3.2f %%)\n",
                 global_comparisions,
-                global_fixes, ((global_fixes * 100.0)/global_comparisions), 
+                global_fixes, ((global_fixes * 100.0)/global_comparisions),
                 global_inconsistencies, ((global_inconsistencies * 100.0)/global_comparisions));
     }
-
 
     public static void main(String[] args)
     {

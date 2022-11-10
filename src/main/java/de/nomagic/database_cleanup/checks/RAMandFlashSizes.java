@@ -76,12 +76,18 @@ public class RAMandFlashSizes extends BasicCheck
                         }
                         else
                         {
-                            inconsistencies++;
-                            if(true == verbose)
+                            long diff = sizeByte - bytes;
+                            diff = Math.abs(diff);
+                            if(diff > 1024)
                             {
-                                System.err.println("Inconsistency found in " + name + " !!!");
-                                System.out.println("RAM bytes: " + sizeByte + " (" +  hex.toString() + ") RAM kb: " + sizeKB + " difference: " + (sizeByte - bytes) + " !");
+                                inconsistencies++;
+                                if(true == verbose)
+                                {
+                                    System.err.println("Inconsistency found in " + name + " !!!");
+                                    System.out.println("RAM bytes: " + sizeByte + " (" +  hex.toString() + ") RAM kb: " + sizeKB + " difference: " + (sizeByte - bytes) + " !");
+                                }
                             }
+                            // else -> difference due to resolution / rounding to full kb.
                         }
                     }
                 }
@@ -147,12 +153,18 @@ public class RAMandFlashSizes extends BasicCheck
                         }
                         else
                         {
-                            inconsistencies++;
-                            if(true == verbose)
+                            long diff = sizeByte - bytes;
+                            diff = Math.abs(diff);
+                            if(diff > 1024)
                             {
-                                System.err.println("Inconsistency found in " + name + " !!!");
-                                System.out.println("FLASH bytes: " + sizeByte + " ( " + (sizeByte/1024) + "kb) FLASH kb: " + sizeKB + " difference: " + (sizeByte - bytes) + " !");
+                                inconsistencies++;
+                                if(true == verbose)
+                                {
+                                    System.err.println("Inconsistency found in " + name + " !!!");
+                                    System.out.println("FLASH bytes: " + sizeByte + " ( " + (sizeByte/1024) + "kb) FLASH kb: " + sizeKB + " difference: " + (sizeByte - bytes) + " !");
+                                }
                             }
+                            // else -> difference due to resolution / rounding to full kb.
                         }
                     }
                 }
