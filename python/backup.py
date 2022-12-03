@@ -89,7 +89,7 @@ def backup_table(tableName):
     hostname = socket.gethostname()
     print("now storing " + tableName)
 
-    dateStr = now.strftime('%Y%m%d-%H%M%S')
+    dateStr = now.strftime('%Y-%m-%d--%H-%M-%S')
     f = open('dump_' + tableName + '-' + hostname + '_' + dateStr + '.sql.bz2', 'w')
     sqldump = subprocess.Popen( ['mysqldump', '-h', db_host, '-u', db_user, '-p'+ db_password, '--single-transaction', 'microcontrollis', tableName],
                          stdout=subprocess.PIPE,
