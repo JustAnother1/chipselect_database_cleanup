@@ -194,6 +194,25 @@ def remove_p_enumeration():
     print('found ' + str(values) + ' enum values')
     print('fixed ' + str(fixed))
 
+
+def removeNullAsSvdId():
+    print('Changing:')
+    num = 0
+    sql = 'SELECT svd_id, name, id FROM microcontroller'
+    rows = cursor.execute(sql)
+    print('found ' + str(rows) + ' rows!')
+    result = cursor.fetchall()
+    for row in result:
+        if None == row[0]:
+            sql = 'UPDATE microcontroller SET svd_id = 0 WHERE id = ' + str(row[2])
+            res = cursor.execute(sql)
+            if 0 == res:
+                print('ERROR: (' + str(row[1]) + ') id ' + str(row[2]))
+            elif 1 == res:
+                pass
+    print('Done ' + str(num) + ' checks!')
+
+
 if __name__ == '__main__':
     commandLineOptions()
     connect2localDB()
@@ -201,6 +220,7 @@ if __name__ == '__main__':
     #convert_pPeripheralInstance()
     #convert_p_field()
     #convert_p_address_block()
-    remove_p_enumeration()
+    #remove_p_enumeration()
+    removeNullAsSvdId()
     closeDB()
     print('Done !')
