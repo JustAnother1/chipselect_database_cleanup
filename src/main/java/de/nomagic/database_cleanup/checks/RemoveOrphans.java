@@ -13,6 +13,7 @@ public class RemoveOrphans extends BasicCheck
         super(verbose, db);
     }
 
+    @Override
     public boolean execute()
     {
         // are all element linked ? remove unlinked elements (they are not accessible anyway)
@@ -111,40 +112,7 @@ public class RemoveOrphans extends BasicCheck
             run = removeOrphanFields();
         }
 
-        // Enumerations
-        if(run == true)
-        {
-            db.commit();
-            run = removeOrphanEnums_field();
-        }
-        if(run == true)
-        {
-            db.commit();
-            run = removeOrphanEnums_null();
-        }
-        if(run == true)
-        {
-            db.commit();
-            run = removeOrphanEnums();
-        }
 
-
-        // Enumeration values
-        if(run == true)
-        {
-            db.commit();
-            run = removeOrphanEnumValues_enum();
-        }
-        if(run == true)
-        {
-            db.commit();
-            run = removeOrphanEnumValues_null();
-        }
-        if(run == true)
-        {
-            db.commit();
-            run = removeOrphanEnumValues();
-        }
         return run;
     }
 
@@ -259,48 +227,6 @@ public class RemoveOrphans extends BasicCheck
         System.out.println("removing orphan (unused / unlinked) fields ...");
         return findUnlinkedEntries("id", "p_field",
                                    "field_id", "pl_field", false);
-    }
-
-    public boolean removeOrphanEnums_field()
-    {
-        System.out.println("removing orphan (unused / unlinked) enumerations ...");
-        return findUnlinkedEntries("field_id", "pl_enumeration",
-                                   "id", "p_field", false);
-    }
-
-    public boolean removeOrphanEnums_null()
-    {
-        System.out.println("removing orphan (unused / unlinked) enumerations ...");
-        return findUnlinkedEntries("enum_id", "pl_enumeration",
-                                   "id", "p_enumeration", false);
-    }
-
-    public boolean removeOrphanEnums()
-    {
-        System.out.println("removing orphan (unused / unlinked) enumerations ...");
-        return findUnlinkedEntries("id", "p_enumeration",
-                                   "enum_id", "pl_enumeration", false);
-    }
-
-    public boolean removeOrphanEnumValues_enum()
-    {
-        System.out.println("removing orphan (unused / unlinked) enumeration values ...");
-        return findUnlinkedEntries("enum_id", "pl_enumeration_element",
-                                   "id", "p_enumeration", false);
-    }
-
-    public boolean removeOrphanEnumValues_null()
-    {
-        System.out.println("removing orphan (unused / unlinked) enumeration values ...");
-        return findUnlinkedEntries("value_id", "pl_enumeration_element",
-                                   "id", "p_enumeration_element", false);
-    }
-
-    public boolean removeOrphanEnumValues()
-    {
-        System.out.println("removing orphan (unused / unlinked) enumeration values ...");
-        return findUnlinkedEntries("id", "p_enumeration_element",
-                                   "value_id", "pl_enumeration_element", false);
     }
 
 
