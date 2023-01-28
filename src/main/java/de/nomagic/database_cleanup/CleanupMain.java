@@ -1,5 +1,7 @@
 package de.nomagic.database_cleanup;
 
+import java.util.Vector;
+
 import de.nomagic.database_cleanup.checks.BasicCheck;
 import de.nomagic.database_cleanup.checks.CheckAlternativeUsages;
 import de.nomagic.database_cleanup.checks.CheckPeripherals;
@@ -13,6 +15,12 @@ public class CleanupMain
     private String dbUser;
     private String dbPassword;
     private boolean verbose = false;
+    private boolean allTests = true;
+    private boolean ramTest = false;
+    private boolean orphanTest = false;
+    private boolean stringTest = false;
+    private boolean altUsageTest = false;
+    private boolean peripheralsTest = false;
 
     public CleanupMain()
     {
@@ -22,7 +30,7 @@ public class CleanupMain
     {
         if(args.length < 3)
         {
-            System.out.println("Usage: <database host> <db user> <db password>");
+            System.out.println("Usage: <database host> <db user> <db password> <verbose> <test>");
             System.exit(1);
         }
         else
@@ -46,6 +54,45 @@ public class CleanupMain
                     verbose = false;
                 }
             }
+            if(args.length > 4)
+            {
+                switch(args[4])
+                {
+                case "all":
+                    allTests = true;
+                    break;
+
+                case "RAM":
+                    ramTest = true;
+                    allTests = false;
+                    break;
+
+                case "Orphans":
+                    orphanTest = true;
+                    allTests = false;
+                    break;
+
+                case "cleanup":
+                    stringTest = true;
+                    allTests = false;
+                    break;
+
+                case "alt":
+                    altUsageTest = true;
+                    allTests = false;
+                    break;
+
+                case "peripherals":
+                    peripheralsTest = true;
+                    allTests = false;
+                    break;
+
+                default:
+                    System.err.println("invalid test specification (" + args[4] + ") !");
+                    allTests = false;
+                    break;
+                }
+            }
         }
     }
 
@@ -55,23 +102,48 @@ public class CleanupMain
         int global_comparisions = 0;
         int global_fixes = 0;
         int global_inconsistencies = 0;
+        Vector<BasicCheck> allTest = new Vector<BasicCheck>();
 
         parseConfig(args);
 
         DataBaseWrapper db = new DataBaseWrapper();
         db.connectToDataBase(dbLocation, dbUser, dbPassword);
 
-        BasicCheck[] allTest = {
-                new RAMandFlashSizes(verbose, db),
-                new RemoveOrphans(verbose, db),
-                new CleanupStrings(verbose, db),
-                new CheckAlternativeUsages(verbose, db),
-                new CheckPeripherals(verbose, db),
-                };
-
-        for(int i = 0; i < allTest.length; i++)
+        if(true == allTests)
         {
-            BasicCheck curCheck = allTest[i];
+            allTest.add( new RAMandFlashSizes(verbose, db));
+            allTest.add( new RemoveOrphans(verbose, db));
+            allTest.add( new CleanupStrings(verbose, db));
+            allTest.add( new CheckAlternativeUsages(verbose, db));
+            allTest.add( new CheckPeripherals(verbose, db));
+        }
+        else
+        {
+            if(ramTest)
+            {
+                allTest.add( new RAMandFlashSizes(verbose, db));
+            }
+            if(orphanTest)
+            {
+                allTest.add( new RemoveOrphans(verbose, db));
+            }
+            if(stringTest)
+            {
+                allTest.add( new CleanupStrings(verbose, db));
+            }
+            if(altUsageTest)
+            {
+                allTest.add( new CheckAlternativeUsages(verbose, db));
+            }
+            if(peripheralsTest)
+            {
+                allTest.add( new CheckPeripherals(verbose, db));
+            }
+        }
+
+        for(int i = 0; i < allTest.size(); i++)
+        {
+            BasicCheck curCheck = allTest.get(i);
             run = curCheck.execute();
             global_comparisions += curCheck.getNumberComparissons();
             global_fixes += curCheck.getFixes();
