@@ -20,6 +20,12 @@ public class CheckPeripherals extends BasicCheck
     {
         super(verbose, db);
     }
+    
+	@Override
+	public String getName() 
+	{
+		return "check peripherals";
+	}
 
     private void check_one_chip(Integer dev_id) throws SQLException
     {

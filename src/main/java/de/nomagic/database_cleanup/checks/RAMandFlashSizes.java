@@ -13,6 +13,12 @@ public class RAMandFlashSizes extends BasicCheck
     {
         super(verbose, db);
     }
+    
+	@Override
+	public String getName() 
+	{
+		return "RAM + Flash sizes";
+	}
 
     public boolean execute()
     {

@@ -12,6 +12,12 @@ public class RemoveOrphans extends BasicCheck
     {
         super(verbose, db);
     }
+    
+	@Override
+	public String getName() 
+	{
+		return "remove orphans";
+	}
 
     @Override
     public boolean execute()

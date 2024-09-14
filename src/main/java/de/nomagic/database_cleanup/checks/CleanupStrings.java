@@ -12,6 +12,12 @@ public class CleanupStrings extends BasicCheck
     {
         super(verbose, db);
     }
+    
+	@Override
+	public String getName() 
+	{
+		return "cleanup strings";
+	}
 
     public String cleanupString(final String dirty)
     {

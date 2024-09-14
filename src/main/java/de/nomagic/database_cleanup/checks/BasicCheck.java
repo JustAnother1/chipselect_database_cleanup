@@ -17,7 +17,8 @@ public abstract class BasicCheck
     }
 
     public abstract boolean execute();
-
+    public abstract String getName();
+    
     public int getNumberComparissons()
     {
         return comparisons;

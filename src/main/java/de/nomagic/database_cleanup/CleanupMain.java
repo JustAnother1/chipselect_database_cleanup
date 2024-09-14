@@ -3,6 +3,7 @@ package de.nomagic.database_cleanup;
 import java.util.Vector;
 
 import de.nomagic.database_cleanup.checks.BasicCheck;
+import de.nomagic.database_cleanup.checks.CheckAddressBlocks;
 import de.nomagic.database_cleanup.checks.CheckAlternativeUsages;
 import de.nomagic.database_cleanup.checks.CheckPeripherals;
 import de.nomagic.database_cleanup.checks.CleanupStrings;
@@ -21,6 +22,7 @@ public class CleanupMain
     private boolean stringTest = false;
     private boolean altUsageTest = false;
     private boolean peripheralsTest = false;
+    private boolean addressBlockTest = false;
 
     public CleanupMain()
     {
@@ -86,6 +88,11 @@ public class CleanupMain
                     peripheralsTest = true;
                     allTests = false;
                     break;
+                    
+                case "address_block":
+                    addressBlockTest = true;
+                    allTests = false;
+                    break;
 
                 default:
                     System.err.println("invalid test specification (" + args[4] + ") !");
@@ -116,6 +123,7 @@ public class CleanupMain
             allTest.add( new CleanupStrings(verbose, db));
             allTest.add( new CheckAlternativeUsages(verbose, db));
             allTest.add( new CheckPeripherals(verbose, db));
+            allTest.add( new CheckAddressBlocks(verbose, db));
         }
         else
         {
@@ -139,11 +147,16 @@ public class CleanupMain
             {
                 allTest.add( new CheckPeripherals(verbose, db));
             }
+            if(addressBlockTest)
+            {
+            	 allTest.add( new CheckAddressBlocks(verbose, db));
+            }
         }
 
         for(int i = 0; i < allTest.size(); i++)
         {
             BasicCheck curCheck = allTest.get(i);
+            System.out.println("Now starting test " + curCheck.getName() + " ...");
             run = curCheck.execute();
             global_comparisions += curCheck.getNumberComparissons();
             global_fixes += curCheck.getFixes();

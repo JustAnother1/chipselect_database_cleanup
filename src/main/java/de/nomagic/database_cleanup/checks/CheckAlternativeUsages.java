@@ -12,6 +12,12 @@ public class CheckAlternativeUsages extends BasicCheck
     {
         super(verbose, db);
     }
+    
+	@Override
+	public String getName() 
+	{
+		return "alternative vendor";
+	}
 
     public boolean execute()
     {
