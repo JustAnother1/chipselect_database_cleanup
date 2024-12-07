@@ -23,6 +23,12 @@ public class CleanupStrings extends BasicCheck
         return "cleanup strings";
     }
 
+    public void addParameter(String name, String value)
+    {
+        // no parameters accepted !
+        valid = false;
+    }
+
     public String cleanupString(final String dirty)
     {
         String wet = dirty.trim();

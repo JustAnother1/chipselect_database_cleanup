@@ -1,5 +1,6 @@
 package de.nomagic.database_cleanup;
 
+import de.nomagic.database_cleanup.checks.helpers.NamedRange;
 
 public class RangeCheck
 {
@@ -19,38 +20,47 @@ public class RangeCheck
         }
     }
 
-    public void add(int start_offset, int length, String fieldName)
+    public void add(NamedRange range)
     {
-        if(start_offset >= size)
+        if(range.getOffset() >= size)
         {
             // we start already out of bounds -> error
             out_of_bounds = true;
-            errorMessage = errorMessage + "The field " + fieldName + "(start: " + start_offset + ", size : " + length + ") does not fit the register! ";
+            errorMessage = errorMessage + "The " + range.getName()
+                    + "(start: " + range.getOffset() + ","
+                    + " size : " + range.getSize() + ")"
+                    + " does not fit!\r\n";
         }
         else
         {
             // mark all bits as used
-            for(int i = 0; i < length; i++)
+            for(int i = 0; i < range.getSize(); i++)
             {
-                if(start_offset + i < size)
+                if(range.getOffset() + i < size)
                 {
-                    if(null != used[start_offset + i])
+                    if(null != used[range.getOffset() + i])
                     {
                         // this position is already used -> error
                         overlap_error = true;
-                        errorMessage = errorMessage + "The field " + fieldName + "(start: " + start_offset + ", size : " + length + ") collides with the field " + used[start_offset + i] + " ";
+                        errorMessage = errorMessage + "The " + range.getName() + "(" + range.getId() + ")"
+                                + "(start: " + range.getOffset() + ","
+                                + " size : " + range.getSize() + ")"
+                                + " collides with the " + used[range.getOffset() + i] + "\r\n";
                     }
                     else
                     {
                         // mark this bit as used.
-                        used[start_offset + i] = fieldName;
+                        used[range.getOffset() + i] = range.getName();
                     }
                 }
                 else
                 {
                     // added area does not fit completely -> error
                     out_of_bounds = true;
-                    errorMessage = errorMessage + "The field " + fieldName + "(start: " + start_offset + ", size : " + length + ") does not fit the register! ";
+                    errorMessage = errorMessage + "The " + range.getName()
+                            + "(start: " + range.getOffset() + ","
+                            + " size : " + range.getSize() + ")"
+                            + " does not fit!\r\n";
                     break;
                 }
             }

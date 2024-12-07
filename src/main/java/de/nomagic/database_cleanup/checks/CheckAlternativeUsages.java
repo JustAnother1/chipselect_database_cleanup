@@ -23,6 +23,12 @@ public class CheckAlternativeUsages extends BasicCheck
         return "alternative vendor";
     }
 
+    public void addParameter(String name, String value)
+    {
+        // no parameters accepted !
+        valid = false;
+    }
+
     public boolean execute(boolean dryRun)
     {
         boolean run = true;

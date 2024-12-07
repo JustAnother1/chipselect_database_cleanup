@@ -23,6 +23,12 @@ public class RemoveOrphans extends BasicCheck
         return "remove orphans";
     }
 
+    public void addParameter(String name, String value)
+    {
+        // no parameters accepted !
+        valid = false;
+    }
+
     @Override
     public boolean execute(boolean dryRun)
     {

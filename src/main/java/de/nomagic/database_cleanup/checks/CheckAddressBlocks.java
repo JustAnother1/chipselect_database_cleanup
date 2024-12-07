@@ -25,6 +25,12 @@ public class CheckAddressBlocks extends BasicCheck
         return "Address Block";
     }
 
+    public void addParameter(String name, String value)
+    {
+        // no parameters accepted !
+        valid = false;
+    }
+
     @Override
     public boolean execute(boolean dryRun)
     {
@@ -95,7 +101,6 @@ public class CheckAddressBlocks extends BasicCheck
                     log.info("This           {}", a.toString());
                     log.info("is the same as {}", block.toString());
                     isDuplicate = true;
-                    inconsistencies++;
                     break;
                 }
             }
@@ -115,7 +120,18 @@ public class CheckAddressBlocks extends BasicCheck
                 }
                 else
                 {
-                    log.info("dry run: Would have deleted link of address block {} to peripheral {} !", last_per, block.getId());
+                    log.info("dry run: Would have deleted link from address block {} to peripheral {} !", block.getId(), last_per);
+                }
+                if(false == dryRun)
+                {
+                    // delete address block
+                    String sql = String.format("DELETE FROM p_address_block WHERE id = %d LIMIT 1", block.getId());
+                    db.executeUpdate(sql);
+                    fixes++;
+                }
+                else
+                {
+                    log.info("dry run: Would have deleted address block {} !", block.getId());
                 }
             }
         }

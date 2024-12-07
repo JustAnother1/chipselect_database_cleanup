@@ -7,6 +7,7 @@ public abstract class BasicCheck
     protected int comparisons = 0;
     protected int fixes = 0;
     protected int inconsistencies = 0;
+    protected boolean valid = true;
     protected final DataBaseWrapper db;
 
     public BasicCheck(DataBaseWrapper db)
@@ -16,6 +17,7 @@ public abstract class BasicCheck
 
     public abstract boolean execute(boolean dryRun);
     public abstract String getName();
+    public abstract void addParameter(String name, String value);
 
     public int getNumberComparissons()
     {
@@ -30,6 +32,11 @@ public abstract class BasicCheck
     public int getInconsistencies()
     {
         return inconsistencies;
+    }
+
+    public boolean isValid()
+    {
+        return valid;
     }
 
 }

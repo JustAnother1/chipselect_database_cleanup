@@ -24,6 +24,12 @@ public class RAMandFlashSizes extends BasicCheck
         return "RAM + Flash sizes";
     }
 
+    public void addParameter(String name, String value)
+    {
+        // no parameters accepted !
+        valid = false;
+    }
+
     public boolean execute(boolean dryRun)
     {
         boolean run = true;

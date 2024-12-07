@@ -5,6 +5,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Vector;
 
 import org.slf4j.Logger;
@@ -30,6 +31,7 @@ public class CleanupMain
     private String dbPassword;
     private boolean dryRun = false;
     private boolean listTests = false;
+    private final HashMap<String,String> test_parameters = new HashMap<String,String>();
     // tests
     private boolean allTests = true;
     private boolean ramTest = false;
@@ -156,15 +158,16 @@ public class CleanupMain
     {
         System.out.println("Parameters:");
         System.out.println("-h / --help                : print this message.");
-        System.out.println("-v                         : verbose output for even more messages use -v -v or even -v -v -v");
+        System.out.println("-v                         : verbose output for even more messages use -v -v or even -v -v -v.");
         System.out.println("-noColour                  : do not highlight the output.");
-        System.out.println("-db_host <database host>   : the location of the db server");
-        System.out.println("-db_user <user name>       : the databse user to use");
-        System.out.println("-db_password <password>    : the password of the databse user");
-        System.out.println("-test <test name>          : execute the named test ");
-        System.out.println("                           : (this can appear more than once to do many different tests)");
+        System.out.println("-db_host <database host>   : the location of the db server.");
+        System.out.println("-db_user <user name>       : the databse user to use.");
+        System.out.println("-db_password <password>    : the password of the databse user.");
+        System.out.println("-test <test name>          : execute the named test.");
+        System.out.println("                           : (this can appear more than once to do many different tests).");
         System.out.println("-dry-run                   : do not change data on the server.");
-        System.out.println("-list                      : list all possible tests ");
+        System.out.println("-list                      : list all possible tests.");
+        System.out.println("-arg <arg> <value>         : give an argument to the tests.");
     }
 
     public void printListofTests()
@@ -296,6 +299,19 @@ public class CleanupMain
                 {
                     listTests = true;
                 }
+                else if(true == "-arg".equals(args[i]))
+                {
+                    i++;
+                    i++;
+                    if(i == args.length)
+                    {
+                        System.err.println("ERROR: missing parameter for " + args[i-2]);
+                        return false;
+                    }
+                    String key = args[i-1];
+                    String val = args[i];
+                    test_parameters.put(key, val);
+                }
                 // new parameters go here
             }
             else
@@ -373,7 +389,17 @@ public class CleanupMain
         for(int i = 0; i < allTest.size(); i++)
         {
             BasicCheck curCheck = allTest.get(i);
-            System.out.println("Now starting test " + curCheck.getName() + " ...");
+            // test_parameters.
+            for (String key : test_parameters.keySet())
+            {
+                curCheck.addParameter(key, test_parameters.get(key));
+            }
+            if(false == curCheck.isValid())
+            {
+                log.error("Test is not valid !");
+                break;
+            }
+            log.info("Now starting test {} ...", curCheck.getName());
             run = curCheck.execute(dryRun);
             global_comparisions += curCheck.getNumberComparissons();
             global_fixes += curCheck.getFixes();
