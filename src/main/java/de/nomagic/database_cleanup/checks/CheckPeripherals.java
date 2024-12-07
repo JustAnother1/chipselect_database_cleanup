@@ -4,11 +4,16 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.nomagic.database_cleanup.DataBaseWrapper;
 import de.nomagic.database_cleanup.RangeCheck;
 
 public class CheckPeripherals extends BasicCheck
 {
+    private final Logger log = LoggerFactory.getLogger(this.getClass().getName());
+
     private long derivedChips = 0;
     private HashMap<Integer, String> fullChips = new HashMap<Integer, String>();
     private HashMap<Integer, String> noRegisterChips = new HashMap<Integer, String>();
@@ -33,7 +38,10 @@ public class CheckPeripherals extends BasicCheck
         int numErrors = 0;
         int num_Registers = 0;
         // get all peripheral instances for the device
-        String sql = "SELECT id, name, peripheral_id FROM p_peripheral_instance INNER JOIN  pl_peripheral_instance ON pl_peripheral_instance.per_in_id  = p_peripheral_instance.id "
+        String sql = "SELECT id, name, peripheral_id "
+                + "FROM p_peripheral_instance "
+                + "INNER JOIN  pl_peripheral_instance "
+                + "ON pl_peripheral_instance.per_in_id  = p_peripheral_instance.id "
                 + "WHERE pl_peripheral_instance.dev_id = " + dev_id;
         ResultSet rs = db.executeQuery(sql);
         int per_num = 0;
@@ -43,7 +51,11 @@ public class CheckPeripherals extends BasicCheck
             String per_in_name = rs.getString(2);
             int peripheral_id = rs.getInt(3);
             // get all registers for this peripheral
-            String register_sql = "SELECT id, name, size FROM p_register INNER JOIN pl_register ON pl_register.reg_id = p_register.id WHERE pl_register.per_id = " + peripheral_id;
+            String register_sql = "SELECT id, name, size "
+                    + "FROM p_register "
+                    + "INNER JOIN pl_register "
+                    + "ON pl_register.reg_id = p_register.id "
+                    + "WHERE pl_register.per_id = " + peripheral_id;
             ResultSet register_rs = db.executeQuery(register_sql);
             while(register_rs.next())
             {
@@ -53,13 +65,17 @@ public class CheckPeripherals extends BasicCheck
                 num_Registers++;
                 if(1>reg_size)
                 {
-                    System.err.println("The chip " + fullChips.get(dev_id) + " has a invalid register size(" + reg_size + ") for the register " + reg_name + " of the peripheral " + per_in_name + " !");
+                    log.error("The chip " + fullChips.get(dev_id) + " has a invalid register size(" + reg_size + ") for the register " + reg_name + " of the peripheral " + per_in_name + " !");
                 }
                 else
                 {
                     RangeCheck collisionChecker = new RangeCheck(reg_size);
                     // get all fields for this register
-                    String field_sql = "SELECT id, name, bit_offset, size_bit FROM p_field INNER JOIN pl_field ON pl_field.field_id = p_field.id WHERE pl_field.reg_id = " + reg_id;
+                    String field_sql = "SELECT id, name, bit_offset, size_bit "
+                            + "FROM p_field "
+                            + "INNER JOIN pl_field "
+                            + "ON pl_field.field_id = p_field.id "
+                            + "WHERE pl_field.reg_id = " + reg_id;
                     ResultSet field_rs = db.executeQuery(field_sql);
                     while(field_rs.next())
                     {
@@ -75,17 +91,17 @@ public class CheckPeripherals extends BasicCheck
                         if(field_bit_offset > (reg_size-1))
                         {
                             never_out_of_bounds = false;
-                            System.err.println("ERROR: peripheral: " + per_in_name + ", register: " + reg_name + ", field: " + field_name + ", offset: " + field_bit_offset + ", size: " + field_size_bit + ", regSize: " + reg_size);
+                            log.error("ERROR: peripheral: " + per_in_name + ", register: " + reg_name + ", field: " + field_name + ", offset: " + field_bit_offset + ", size: " + field_size_bit + ", regSize: " + reg_size);
                         }
                         if(field_size_bit > reg_size)
                         {
                             never_out_of_bounds = false;
-                            System.err.println("ERROR: peripheral: " + per_in_name + ", register: " + reg_name + ", field: " + field_name + ", offset: " + field_bit_offset + ", size: " + field_size_bit + ", regSize: " + reg_size);
+                            log.error("ERROR: peripheral: " + per_in_name + ", register: " + reg_name + ", field: " + field_name + ", offset: " + field_bit_offset + ", size: " + field_size_bit + ", regSize: " + reg_size);
                         }
                         if( 1 > field_size_bit)
                         {
                             inconsistencies++;
-                            System.err.println("The chip " + fullChips.get(dev_id) + " has a invalid size(" + field_size_bit + ") of the field " + field_name + " in the register " + reg_name +  "(" + reg_size + ") of the peripheral " + per_in_name + " !");
+                            log.error("The chip " + fullChips.get(dev_id) + " has a invalid size(" + field_size_bit + ") of the field " + field_name + " in the register " + reg_name +  "(" + reg_size + ") of the peripheral " + per_in_name + " !");
                         }
                         else
                         {
@@ -99,13 +115,13 @@ public class CheckPeripherals extends BasicCheck
                         inconsistencies++;
                         if(true == collisionChecker.hasCollision())
                         {
-                            System.err.println("The chip " + fullChips.get(dev_id) + " has a field collision in the register " + reg_name +  "(" + reg_size + ") of the peripheral " + per_in_name + " !");
+                            log.error("The chip " + fullChips.get(dev_id) + " has a field collision in the register " + reg_name +  "(" + reg_size + ") of the peripheral " + per_in_name + " !");
                         }
                         if(true == collisionChecker.hasOutOfBoundsError())
                         {
-                            System.err.println("The chip " + fullChips.get(dev_id) + " has a field out of bounds error in the register " + reg_name + "(" + reg_size + ") of the peripheral " + per_in_name + " !");
+                            log.error("The chip " + fullChips.get(dev_id) + " has a field out of bounds error in the register " + reg_name + "(" + reg_size + ") of the peripheral " + per_in_name + " !");
                         }
-                        // System.err.println("The error was: " + collisionChecker.getErrorMessage());
+                        // log.error("The error was: " + collisionChecker.getErrorMessage());
                     }
                 }
             }
@@ -114,7 +130,7 @@ public class CheckPeripherals extends BasicCheck
         if(1 > per_num)
         {
             String chipName = fullChips.get(dev_id);
-            // System.err.println("The chip " + chipName + " has no peripherals !");
+            // log.error("The chip " + chipName + " has no peripherals !");
             noRegisterChips.put(dev_id, chipName);
             // fullChips.remove(dev_id);
             inconsistencies++;
@@ -127,21 +143,21 @@ public class CheckPeripherals extends BasicCheck
                 float percentile = numErrors;
                 percentile = percentile / num_Registers;
                 percentile = percentile * 100;
-                System.out.println("Registers : " + num_Registers + " Errors: " + numErrors + " percentile error: " + percentile);
+                log.info("Registers : " + num_Registers + " Errors: " + numErrors + " percentile error: " + percentile);
                 if(true == size_always_bigger_as_offset)
                 {
-                    System.out.println("size is always bigger than the offset!");
+                    log.info("size is always bigger than the offset!");
                 }
                 if(true == never_out_of_bounds)
                 {
-                    System.out.println("never out of bounds!");
+                    log.info("never out of bounds!");
                 }
             }
         }
     }
 
     @Override
-    public boolean execute()
+    public boolean execute(boolean dryRun)
     {
         try
         {
@@ -166,8 +182,8 @@ public class CheckPeripherals extends BasicCheck
                     svdLink.put(id, svdId);
                 }
             }
-            System.out.println("found " + fullChips.size() + " chips with peripherals.");
-            System.out.println("found " + derivedChips + " chip variants");
+            log.info("found {} chips with peripherals.", fullChips.size());
+            log.info("found {} chip variants", derivedChips);
             // check that all chips referred to by svd_id exist
             for(Integer source: svdLink.keySet())
             {
@@ -178,23 +194,30 @@ public class CheckPeripherals extends BasicCheck
                     Integer nextHop = svdLink.get(destination);
                     if(null == nextHop)
                     {
-                        System.err.println("Chip refered(svd_id) to a not existing chip(" + destination + ") from (" + source + ")!");
+                        log.error("Chip refered(svd_id) to a not existing chip({}) from ({})!", destination, source);
                         inconsistencies++;
                     }
                     else
                     {
-                        // fix
-                        System.err.println("Fixing svd_id link");
-                        String sqlFix = "UPDATE microcontroller SET svd_id = \"" + nextHop + "\" WHERE id = " + source;
-                        try
+                        if(false == dryRun)
                         {
-                            db.executeUpdate(sqlFix);
+                            // fix
+                            log.info("Fixing svd_id link");
+                            String sqlFix = "UPDATE microcontroller SET svd_id = \"" + nextHop + "\" WHERE id = " + source;
+                            try
+                            {
+                                db.executeUpdate(sqlFix);
+                            }
+                            catch (SQLException e)
+                            {
+                                e.printStackTrace();
+                            }
+                            fixes++;
                         }
-                        catch (SQLException e)
+                        else
                         {
-                            e.printStackTrace();
+                            log.info("dry run: would have would hvae set the svd id to {} for microcontroller {} !", nextHop, source);
                         }
-                        fixes++;
                     }
                 }
                 // else -> OK
@@ -203,13 +226,13 @@ public class CheckPeripherals extends BasicCheck
             for(Integer dev_id : fullChips.keySet())
             {
                 String name = fullChips.get(dev_id);
-                System.out.println("now checking Chip " + name);
+                log.info("now checking Chip {}", name);
                 check_one_chip(dev_id);
             }
-            System.out.println("found " + noRegisterChips.size() + " chips without registers.");
-            if( 0 < noRegisterChips.size())
+            log.info("found {} chips without registers.", noRegisterChips.size());
+            if(0 < noRegisterChips.size())
             {
-                fix_try_to_find_original_for_register_less_chips();
+                fix_try_to_find_original_for_register_less_chips(dryRun);
             }
             return true;
         }
@@ -220,7 +243,7 @@ public class CheckPeripherals extends BasicCheck
         }
     }
 
-    private void fix_try_to_find_original_for_register_less_chips()
+    private void fix_try_to_find_original_for_register_less_chips(boolean dryRun)
     {
         for(Integer dev_id : noRegisterChips.keySet())
         {
@@ -242,17 +265,24 @@ public class CheckPeripherals extends BasicCheck
                     String origName = fullChips.get(origId);
                     if(null != origName)
                     {
-                        System.out.println("Found Family Definition (" + origName + ") for " + name + "!");
-                        String sqlFix = "UPDATE microcontroller SET svd_id = \"" + origId + "\" WHERE id = " + dev_id;
-                        try
+                        log.info("Found Family Definition ({}) for {}!", origName, name);
+                        if(false == dryRun)
                         {
-                            db.executeUpdate(sqlFix);
+                            String sqlFix = "UPDATE microcontroller SET svd_id = \"" + origId + "\" WHERE id = " + dev_id;
+                            try
+                            {
+                                db.executeUpdate(sqlFix);
+                            }
+                            catch (SQLException e)
+                            {
+                                e.printStackTrace();
+                            }
+                            fixes++;
                         }
-                        catch (SQLException e)
+                        else
                         {
-                            e.printStackTrace();
+                            log.info("dry run: would have set the SVD id to {} for microcontrolle {}", origId, dev_id);
                         }
-                        fixes++;
                         break;
                     }
                     else

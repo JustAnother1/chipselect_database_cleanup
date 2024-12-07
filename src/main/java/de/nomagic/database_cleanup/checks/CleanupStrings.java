@@ -40,23 +40,23 @@ public class CleanupStrings extends BasicCheck
         return clean;
     }
 
-    public boolean execute()
+    public boolean execute(boolean dryRun)
     {
         boolean run = true;
         if(true == run)
         {
-            run = namesInPackage();
+            run = namesInPackage(dryRun);
         }
         if(true == run)
         {
-            run = namesInArchitecture();
+            run = namesInArchitecture(dryRun);
         }
         return run;
     }
 
-    private boolean namesInPackage()
+    private boolean namesInPackage(boolean dryRun)
     {
-        System.out.println("cleaning names in p_package...");
+        log.info("cleaning names in p_package...");
         try
         {
             String sql = "SELECT id, name FROM p_package";
@@ -69,11 +69,18 @@ public class CleanupStrings extends BasicCheck
                 comparisons++;
                 if(false == cleaned.equals(name))
                 {
-                    String sqlFix = "UPDATE p_package SET name = \"" + cleaned + "\" WHERE id = " + id;
-                    log.trace("In db: _" + name + "_ cleaned : " + cleaned);
-                    log.trace("SQL: " + sqlFix);
-                    db.executeUpdate(sqlFix);
-                    fixes++;
+                    if(false == dryRun)
+                    {
+                        String sqlFix = "UPDATE p_package SET name = \"" + cleaned + "\" WHERE id = " + id;
+                        log.trace("In db: _" + name + "_ cleaned : " + cleaned);
+                        log.trace("SQL: " + sqlFix);
+                        db.executeUpdate(sqlFix);
+                        fixes++;
+                    }
+                    else
+                    {
+                        log.info("dry run: would have changed package name from {} to {}",name, cleaned );
+                    }
                 }
                 // else no change -> OK
             }
@@ -86,9 +93,9 @@ public class CleanupStrings extends BasicCheck
         return false;
     }
 
-    private boolean namesInArchitecture()
+    private boolean namesInArchitecture(boolean dryRun)
     {
-        System.out.println("cleaning names in p_architecture...");
+        log.info("cleaning names in p_architecture...");
         try
         {
             String sql = "SELECT id, name FROM p_architecture";
@@ -103,11 +110,18 @@ public class CleanupStrings extends BasicCheck
                     String cleaned = cleanupString(name);
                     if(false == cleaned.equals(name))
                     {
-                        String sqlFix = "UPDATE p_architecture SET name = \"" + cleaned + "\" WHERE id = " + id;
-                        log.trace("In db: _" + name + "_ cleaned : " + cleaned);
-                        log.trace("SQL: " + sqlFix);
-                        db.executeUpdate(sqlFix);
-                        fixes++;
+                        if(false == dryRun)
+                        {
+                            String sqlFix = "UPDATE p_architecture SET name = \"" + cleaned + "\" WHERE id = " + id;
+                            log.trace("In db: _" + name + "_ cleaned : " + cleaned);
+                            log.trace("SQL: " + sqlFix);
+                            db.executeUpdate(sqlFix);
+                            fixes++;
+                        }
+                        else
+                        {
+                            log.info("dry run: would have renamed architecture {} to {}", name, cleaned);
+                        }
                     }
                     // else no change -> OK
                 }

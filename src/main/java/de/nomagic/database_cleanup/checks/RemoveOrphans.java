@@ -24,7 +24,7 @@ public class RemoveOrphans extends BasicCheck
     }
 
     @Override
-    public boolean execute()
+    public boolean execute(boolean dryRun)
     {
         // are all element linked ? remove unlinked elements (they are not accessible anyway)
         boolean run = true;
@@ -32,94 +32,94 @@ public class RemoveOrphans extends BasicCheck
         if(run == true)
         {
             db.commit();
-            run = removeOrphanPeripheralInstances_device();
+            run = removeOrphanPeripheralInstances_device(dryRun);
         }
         if(run == true)
         {
             db.commit();
-            run = removeOrphanPeripheralInstances_null();
+            run = removeOrphanPeripheralInstances_null(dryRun);
         }
         if(run == true)
         {
             db.commit();
-            run = removeOrphanPeripheralInstances();
+            run = removeOrphanPeripheralInstances(dryRun);
         }
 
         // Peripherals
         if(run == true)
         {
             db.commit();
-            run = removeOrphanPeripherals();
+            run = removeOrphanPeripherals(dryRun);
         }
 
         // Address Blocks
         if(run == true)
         {
             db.commit();
-            run = removeOrphanAddressBlocks_peripheral();
+            run = removeOrphanAddressBlocks_peripheral(dryRun);
         }
         if(run == true)
         {
             db.commit();
-            run = removeOrphanAddressBlocks_null();
+            run = removeOrphanAddressBlocks_null(dryRun);
         }
         if(run == true)
         {
             db.commit();
-            run = removeOrphanAddressBlocks();
+            run = removeOrphanAddressBlocks(dryRun);
         }
 
         // Interrupts
         if(run == true)
         {
             db.commit();
-            run = removeOrphanInterrupts_peripheral();
+            run = removeOrphanInterrupts_peripheral(dryRun);
         }
         if(run == true)
         {
             db.commit();
-            run = removeOrphanInterrupts_null();
+            run = removeOrphanInterrupts_null(dryRun);
         }
         if(run == true)
         {
             db.commit();
-            run = removeOrphanInterrupts();
+            run = removeOrphanInterrupts(dryRun);
         }
 
         // Registers
         if(run == true)
         {
             db.commit();
-            run = removeOrphanRegisters_peripheral();
+            run = removeOrphanRegisters_peripheral(dryRun);
         }
         if(run == true)
         {
             db.commit();
             // there is a link in pl_register to a register that has been removed
             // -> remove the link
-            run = removeOrphanRegisters_nullPointer();
+            run = removeOrphanRegisters_nullPointer(dryRun);
         }
         if(run == true)
         {
             db.commit();
-            run = removeOrphanRegisters();
+            run = removeOrphanRegisters(dryRun);
         }
 
         // Fields
         if(run == true)
         {
             db.commit();
-            run = removeOrphanFields_register();
+            run = removeOrphanFields_register(dryRun);
         }
         if(run == true)
         {
             db.commit();
-            run = removeOrphanFields_null();
+            run = removeOrphanFields_null(dryRun);
         }
         if(run == true)
         {
             db.commit();
-            run = removeOrphanFields();
+            run = removeOrphanFields(dryRun);
         }
 
 
@@ -127,116 +127,116 @@ public class RemoveOrphans extends BasicCheck
     }
 
 
-    public boolean removeOrphanAddressBlocks_peripheral()
+    public boolean removeOrphanAddressBlocks_peripheral(boolean dryRun)
     {
-        System.out.println("removing orphan (unused / unlinked) address blocks ...");
+        log.info("removing orphan (unused / unlinked) address blocks ...");
         return findUnlinkedEntries("per_id", "pl_address_block",  // item
-                                   "peripheral_id", "p_peripheral_instance", false); // link
+                                   "peripheral_id", "p_peripheral_instance", false, dryRun); // link
     }
 
-    public boolean removeOrphanAddressBlocks_null()
+    public boolean removeOrphanAddressBlocks_null(boolean dryRun)
     {
-        System.out.println("removing orphan (unused / unlinked) address blocks ...");
+        log.info("removing orphan (unused / unlinked) address blocks ...");
         return findUnlinkedEntries("addr_id", "pl_address_block", // item
-                                   "id", "p_address_block", false);  // link
+                                   "id", "p_address_block", false, dryRun);  // link
     }
 
-    public boolean removeOrphanAddressBlocks()
+    public boolean removeOrphanAddressBlocks(boolean dryRun)
     {
-        System.out.println("removing orphan (unused / unlinked) address blocks ...");
+        log.info("removing orphan (unused / unlinked) address blocks ...");
         return findUnlinkedEntries("id", "p_address_block",  // item
-                                   "addr_id", "pl_address_block", false);  // link
+                                   "addr_id", "pl_address_block", false, dryRun);  // link
     }
 
-    private boolean removeOrphanInterrupts_null()
+    private boolean removeOrphanInterrupts_null(boolean dryRun)
     {
-        System.out.println("removing orphan (unused / unlinked) address blocks ...");
+        log.info("removing orphan (unused / unlinked) address blocks ...");
         return findUnlinkedEntries("irq_id", "pl_interrupt", // item)
-                                   "id", "p_interrupt", false);  // link
+                                   "id", "p_interrupt", false, dryRun);  // link
     }
 
-    private boolean removeOrphanInterrupts()
+    private boolean removeOrphanInterrupts(boolean dryRun)
     {
-        System.out.println("removing orphan (unused / unlinked) address blocks ...");
+        log.info("removing orphan (unused / unlinked) address blocks ...");
         return findUnlinkedEntries("id", "p_interrupt",  // item
-                                   "irq_id", "pl_interrupt", false);  // link
+                                   "irq_id", "pl_interrupt", false, dryRun);  // link
     }
 
-    private boolean removeOrphanInterrupts_peripheral()
+    private boolean removeOrphanInterrupts_peripheral(boolean dryRun)
     {
-        System.out.println("removing orphan (unused / unlinked) address blocks ...");
+        log.info("removing orphan (unused / unlinked) address blocks ...");
         return findUnlinkedEntries("per_in_id", "pl_interrupt",  // item
-                                   "id", "p_peripheral_instance", false);  // link
+                                   "id", "p_peripheral_instance", false, dryRun);  // link
     }
 
-    public boolean removeOrphanPeripheralInstances_null()
+    public boolean removeOrphanPeripheralInstances_null(boolean dryRun)
     {
-        System.out.println("removing orphan (unused / unlinked) peripheral instances ...");
+        log.info("removing orphan (unused / unlinked) peripheral instances ...");
         return findUnlinkedEntries("per_in_id","pl_peripheral_instance",
-                                   "id", "p_peripheral_instance", false);
+                                   "id", "p_peripheral_instance", false, dryRun);
     }
 
-    public boolean removeOrphanPeripheralInstances()
+    public boolean removeOrphanPeripheralInstances(boolean dryRun)
     {
-        System.out.println("removing orphan (unused / unlinked) peripheral instances ...");
+        log.info("removing orphan (unused / unlinked) peripheral instances ...");
         return findUnlinkedEntries("id", "p_peripheral_instance",
-                                   "per_in_id","pl_peripheral_instance", false);
+                                   "per_in_id","pl_peripheral_instance", false, dryRun);
     }
 
-    public boolean removeOrphanPeripheralInstances_device()
+    public boolean removeOrphanPeripheralInstances_device(boolean dryRun)
     {
-        System.out.println("removing orphan (missing device) peripheral instances ...");
+        log.info("removing orphan (missing device) peripheral instances ...");
         return findUnlinkedEntries("dev_id", "pl_peripheral_instance",
-                                   "id", "microcontroller", false);
+                                   "id", "microcontroller", false, dryRun);
     }
 
-    private boolean removeOrphanPeripherals()
+    private boolean removeOrphanPeripherals(boolean dryRun)
     {
-        System.out.println("removing orphan (unused / unlinked) peripherals ...");
+        log.info("removing orphan (unused / unlinked) peripherals ...");
         return findUnlinkedEntries("id", "p_peripheral",
-                                   "peripheral_id", "p_peripheral_instance", false);
+                                   "peripheral_id", "p_peripheral_instance", false, dryRun);
     }
 
-    public boolean removeOrphanRegisters_peripheral()
+    public boolean removeOrphanRegisters_peripheral(boolean dryRun)
     {
-        System.out.println("removing orphan links to registers ...");
+        log.info("removing orphan links to registers ...");
         return findUnlinkedEntries("per_id", "pl_register",
-                                   "id", "p_peripheral", false);
+                                   "id", "p_peripheral", false, dryRun);
     }
 
-    public boolean removeOrphanRegisters_nullPointer()
+    public boolean removeOrphanRegisters_nullPointer(boolean dryRun)
     {
-        System.out.println("removing orphan (null pointer) register links ...");
+        log.info("removing orphan (null pointer) register links ...");
         return findUnlinkedEntries("reg_id", "pl_register",
-                                   "id", "p_register", false);
+                                   "id", "p_register", false, dryRun);
     }
 
-    public boolean removeOrphanRegisters()
+    public boolean removeOrphanRegisters(boolean dryRun)
     {
-        System.out.println("removing orphan (unused / unlinked) registers ...");
+        log.info("removing orphan (unused / unlinked) registers ...");
         return findUnlinkedEntries("id", "p_register",
-                                   "reg_id", "pl_register", false);
+                                   "reg_id", "pl_register", false, dryRun);
     }
 
-    public boolean removeOrphanFields_register()
+    public boolean removeOrphanFields_register(boolean dryRun)
     {
-        System.out.println("removing orphan (unused / unlinked) fields ...");
+        log.info("removing orphan (unused / unlinked) fields ...");
         return findUnlinkedEntries("reg_id", "pl_field",
-                                   "id", "p_register", false);
+                                   "id", "p_register", false, dryRun);
     }
 
-    public boolean removeOrphanFields_null()
+    public boolean removeOrphanFields_null(boolean dryRun)
     {
-        System.out.println("removing orphan (unused / unlinked) fields ...");
+        log.info("removing orphan (unused / unlinked) fields ...");
         return findUnlinkedEntries("field_id", "pl_field",
-                                   "id", "p_field", false);
+                                   "id", "p_field", false, dryRun);
     }
 
-    public boolean removeOrphanFields()
+    public boolean removeOrphanFields(boolean dryRun)
     {
-        System.out.println("removing orphan (unused / unlinked) fields ...");
+        log.info("removing orphan (unused / unlinked) fields ...");
         return findUnlinkedEntries("id", "p_field",
-                                   "field_id", "pl_field", false);
+                                   "field_id", "pl_field", false, dryRun);
     }
 
 
@@ -245,7 +245,8 @@ public class RemoveOrphans extends BasicCheck
     // "DELETE FROM pl_peripheral_instance WHERE dev_id = %d"           // action
 
     private boolean findUnlinkedEntries(String itemColumn, String itemTable,
-                                        String linkColumn, String linkTable, boolean schouldLog)
+                                        String linkColumn, String linkTable,
+                                        boolean schouldLog, boolean dryRun)
     {
         try
         {
@@ -254,18 +255,18 @@ public class RemoveOrphans extends BasicCheck
             ResultSet rs_links = db.executeQuery(String.format("SELECT %s FROM %s ORDER BY %s ASC", linkColumn, linkTable, linkColumn));
             rs_links.first();
 
-            System.out.println("received data");
+            log.info("received data");
             int i;
             int f = 0;
             int itemVal = rs_items.getInt(1);
-            if( true == schouldLog) {System.out.println("item = " + itemVal);}
+            if( true == schouldLog) {log.info("item = " + itemVal);}
             int linkValue = rs_links.getInt(1);
-            if( true == schouldLog) {System.out.println("link = " + linkValue);}
+            if( true == schouldLog) {log.info("link = " + linkValue);}
             for(i = 0; ; i++)
             {
                 if(linkValue == itemVal)
                 {
-                    if( true == schouldLog) {System.out.println("equal!");}
+                    if( true == schouldLog) {log.info("equal!");}
                     // this item is linked
                     rs_items.next();
                     if(rs_items.isAfterLast())
@@ -273,39 +274,53 @@ public class RemoveOrphans extends BasicCheck
                         break;
                     }
                     itemVal = rs_items.getInt(1);
-                    if( true == schouldLog) {System.out.println("item = " + itemVal);}
+                    if( true == schouldLog) {log.info("item = " + itemVal);}
                 }
                 else if(linkValue > itemVal)
                 {
-                    if( true == schouldLog) {System.out.println("link greater!");}
-                    f++;
+                    if( true == schouldLog) {log.info("link greater!");}
                     rs_items.next();
                     // fix:
                     String sql = String.format("DELETE FROM %s WHERE %s = %d", itemTable, itemColumn, itemVal);
                     log.trace("Unlinked Item: {}", itemVal);
                     log.trace("Fixing by execuing: {}", sql);
-                    db.executeUpdate(sql);
+                    if(false == dryRun)
+                    {
+                        f++;
+                        db.executeUpdate(sql);
+                    }
+                    else
+                    {
+                        log.info("dry run: would have done: {}", sql);
+                    }
                     if(rs_items.isAfterLast())
                     {
                         break;
                     }
                     itemVal = rs_items.getInt(1);
-                    if( true == schouldLog) {System.out.println("item = " + itemVal);}
+                    if( true == schouldLog) {log.info("item = " + itemVal);}
                 }
                 else if(linkValue < itemVal)
                 {
-                    if( true == schouldLog) {System.out.println("item greater!");}
+                    if( true == schouldLog) {log.info("item greater!");}
                     rs_links.next();
                     if(rs_links.isAfterLast())
                     {
                         do {
                             // last item(s) is(/are) not linked !
                             // fix:
-                            f++;
                             String sql = String.format("DELETE FROM %s WHERE %s = %d", itemTable, itemColumn, itemVal);
                             log.trace("Unlinked Item: {}", itemVal);
                             log.trace("Fixing by execuing: {}", sql);
-                            db.executeUpdate(sql);
+                            if(false == dryRun)
+                            {
+                                f++;
+                                db.executeUpdate(sql);
+                            }
+                            else
+                            {
+                                log.info("dry run: would have done: {}", sql);
+                            }
                             rs_items.next();
                             if(false == rs_items.isAfterLast())
                             {
@@ -318,8 +333,8 @@ public class RemoveOrphans extends BasicCheck
                     if( true == schouldLog) {System.out.println("link = " + linkValue);}
                 }
             }
-            System.out.printf("Done %,d comparisons!\n", i);
-            System.out.printf("found %,d unlinked elements!\n", f);
+            log.info("Done %,d comparisons!\n", i);
+            log.info("found %,d unlinked elements!\n", f);
             comparisons += i;
             fixes +=f;
             return true;

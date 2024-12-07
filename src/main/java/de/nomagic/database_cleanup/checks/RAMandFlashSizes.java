@@ -24,26 +24,26 @@ public class RAMandFlashSizes extends BasicCheck
         return "RAM + Flash sizes";
     }
 
-    public boolean execute()
+    public boolean execute(boolean dryRun)
     {
         boolean run = true;
 
         if(true == run)
         {
-            run = ramSize();
+            run = ramSize(dryRun);
         }
 
         if(true == run)
         {
-            run = flashSize();
+            run = flashSize(dryRun);
         }
 
         return run;
     }
 
-    private boolean ramSize()
+    private boolean ramSize(boolean dryRun)
     {
-        System.out.println("testing consistency of RAM size information ...");
+        log.info("testing consistency of RAM size information ...");
         try
         {
             String sql = "SELECT id, RAM_size_kB, RAM_size_byte, name FROM microcontroller";
@@ -62,9 +62,16 @@ public class RAMandFlashSizes extends BasicCheck
                     long bytes = sizeByte / 1024;
                     if(0 != bytes)
                     {
-                        String updateSql = "UPDATE microcontroller SET RAM_size_kB = " + bytes + " WHERE id =" + id;
-                        db.executeUpdate(updateSql);
-                        fixes++;
+                        if(false == dryRun)
+                        {
+                            String updateSql = "UPDATE microcontroller SET RAM_size_kB = " + bytes + " WHERE id =" + id;
+                            db.executeUpdate(updateSql);
+                            fixes++;
+                        }
+                        else
+                        {
+                            log.info("dry run: would have set RAM_size_kB to {} for microcontroller {}", bytes, id);
+                        }
                     }
                 }
                 else
@@ -72,10 +79,17 @@ public class RAMandFlashSizes extends BasicCheck
                     int bytes = sizeKB * 1024;
                     if(0 == sizeByte)
                     {
-                        // we have a kb size but no byte exact size
-                        String updateSql = "UPDATE microcontroller SET RAM_size_byte = " + bytes + " WHERE id =" + id;
-                        db.executeUpdate(updateSql);
-                        fixes++;
+                        if(false == dryRun)
+                        {
+                            // we have a kb size but no byte exact size
+                            String updateSql = "UPDATE microcontroller SET RAM_size_byte = " + bytes + " WHERE id =" + id;
+                            db.executeUpdate(updateSql);
+                            fixes++;
+                        }
+                        else
+                        {
+                            log.info("dry run: would have set RAM_size_byte to {} for microcontroller {}", bytes, id);
+                        }
                     }
                     else
                     {
@@ -108,9 +122,9 @@ public class RAMandFlashSizes extends BasicCheck
         return false;
     }
 
-    private boolean flashSize()
+    private boolean flashSize(boolean dryRun)
     {
-        System.out.println("testing consistency of FLASH size information ...");
+        log.info("testing consistency of FLASH size information ...");
         try
         {
             String sql = "SELECT id, name, Flash_size_kB FROM microcontroller";
@@ -142,10 +156,17 @@ public class RAMandFlashSizes extends BasicCheck
                     long bytes = sizeByte / 1024;
                     if(0 != bytes)
                     {
-                        // we have a byte exact size but no kb size -> so add that
-                        String updateSql = "UPDATE microcontroller SET Flash_size_kB = " + bytes + " WHERE id =" + id;
-                        db.executeUpdate(updateSql);
-                        fixes++;
+                        if(false == dryRun)
+                        {
+                            // we have a byte exact size but no kb size -> so add that
+                            String updateSql = "UPDATE microcontroller SET Flash_size_kB = " + bytes + " WHERE id =" + id;
+                            db.executeUpdate(updateSql);
+                            fixes++;
+                        }
+                        else
+                        {
+                            log.info("dry run: would have set the Flash_size_kB to {} for microcontroller {}", bytes, id);
+                        }
                     }
                 }
                 else

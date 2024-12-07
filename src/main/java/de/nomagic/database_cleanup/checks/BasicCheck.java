@@ -14,7 +14,7 @@ public abstract class BasicCheck
         this.db = db;
     }
 
-    public abstract boolean execute();
+    public abstract boolean execute(boolean dryRun);
     public abstract String getName();
 
     public int getNumberComparissons()

@@ -4,11 +4,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Vector;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.nomagic.database_cleanup.DataBaseWrapper;
 import de.nomagic.database_cleanup.checks.helpers.AddressBlock;
 
 public class CheckAddressBlocks extends BasicCheck
 {
+    private final Logger log = LoggerFactory.getLogger(this.getClass().getName());
 
     public CheckAddressBlocks(DataBaseWrapper db)
     {
@@ -22,7 +26,7 @@ public class CheckAddressBlocks extends BasicCheck
     }
 
     @Override
-    public boolean execute()
+    public boolean execute(boolean dryRun)
     {
         try
         {
@@ -39,8 +43,8 @@ public class CheckAddressBlocks extends BasicCheck
                 {
                     if(1 < num_addr)
                     {
-                        System.out.println("peripheral " + last_per + " has " + num_addr + " address blocks !");
-                        checkDeviceBlocks(last_per, addrBlockIds);
+                        log.info("peripheral " + last_per + " has " + num_addr + " address blocks !");
+                        checkDeviceBlocks(last_per, addrBlockIds, dryRun);
                     }
                     else
                     {
@@ -60,12 +64,12 @@ public class CheckAddressBlocks extends BasicCheck
             // last peripheral
             if(1 < num_addr)
             {
-                System.out.println("peripheral " + last_per + " has " + num_addr + " address blocks !");
-                checkDeviceBlocks(last_per, addrBlockIds);
+                log.info("peripheral " + last_per + " has " + num_addr + " address blocks !");
+                checkDeviceBlocks(last_per, addrBlockIds, dryRun);
             }
             else
             {
-                // System.out.println("peripheral " + last_per + " has " + num_addr + " address blocks !");
+                // log.info("peripheral " + last_per + " has " + num_addr + " address blocks !");
             }
         }
         catch (SQLException e)
@@ -76,7 +80,7 @@ public class CheckAddressBlocks extends BasicCheck
         return true;
     }
 
-    private void checkDeviceBlocks(int last_per, Vector<Integer> addrBlockIds) throws SQLException
+    private void checkDeviceBlocks(int last_per, Vector<Integer> addrBlockIds, boolean dryRun) throws SQLException
     {
         Vector<AddressBlock> addrBlocks = new Vector<AddressBlock>();
         for (Integer x : addrBlockIds)
@@ -88,8 +92,8 @@ public class CheckAddressBlocks extends BasicCheck
                 comparisons++;
                 if(true == a.equals(block))
                 {
-                    System.out.println("This           " + a.toString());
-                    System.out.println("is the same as " + block.toString());
+                    log.info("This           {}", a.toString());
+                    log.info("is the same as {}", block.toString());
                     isDuplicate = true;
                     inconsistencies++;
                     break;
@@ -98,14 +102,21 @@ public class CheckAddressBlocks extends BasicCheck
             if(false == isDuplicate)
             {
                 addrBlocks.add(block);
-                // System.out.println("adding " + block.toString());
+                // log.info("adding " + block.toString());
             }
             else
             {
-                // delete link
-                String sql = String.format("DELETE FROM pl_address_block WHERE per_id = %d and addr_id = %d LIMIT 1", last_per, block.getId());
-                db.executeUpdate(sql);
-                fixes++;
+                if(false == dryRun)
+                {
+                    // delete link
+                    String sql = String.format("DELETE FROM pl_address_block WHERE per_id = %d and addr_id = %d LIMIT 1", last_per, block.getId());
+                    db.executeUpdate(sql);
+                    fixes++;
+                }
+                else
+                {
+                    log.info("dry run: Would have deleted link of address block {} to peripheral {} !", last_per, block.getId());
+                }
             }
         }
     }

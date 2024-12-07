@@ -28,6 +28,9 @@ public class CleanupMain
     private String dbLocation;
     private String dbUser;
     private String dbPassword;
+    private boolean dryRun = false;
+    private boolean listTests = false;
+    // tests
     private boolean allTests = true;
     private boolean ramTest = false;
     private boolean orphanTest = false;
@@ -151,80 +154,160 @@ public class CleanupMain
 
     public void printHelp()
     {
-        System.out.println("Importer [Parameters]");
         System.out.println("Parameters:");
         System.out.println("-h / --help                : print this message.");
         System.out.println("-v                         : verbose output for even more messages use -v -v or even -v -v -v");
         System.out.println("-noColour                  : do not highlight the output.");
-        System.out.println("-svd <file name>           : import a svd file. Use '-' to read data from stdin.");
-        System.out.println("-segger <file name>        : import SEGGER J-Link device database file.");
-        System.out.println("-vendor <vendor name>      : set chip venor name. This is necessary if the vendor name is not contained in the imported file.");
-        System.out.println("-onlyVendor                : Do not import the file, only check if the Vendor information is contained.");
-        System.out.println("-REST_URL <URL>            : URL of REST server with chip database.");
-        System.out.println("-user <name>               : user name for REST server.");
-        System.out.println("-password <password>       : password for REST server.");
+        System.out.println("-db_host <database host>   : the location of the db server");
+        System.out.println("-db_user <user name>       : the databse user to use");
+        System.out.println("-db_password <password>    : the password of the databse user");
+        System.out.println("-test <test name>          : execute the named test ");
+        System.out.println("                           : (this can appear more than once to do many different tests)");
         System.out.println("-dry-run                   : do not change data on the server.");
+        System.out.println("-list                      : list all possible tests ");
+    }
+
+    public void printListofTests()
+    {
+        System.out.println("all possible tests:");
+        System.out.println("all                      : execute all possible tests");
+        System.out.println("RAM                      : test RAM settings");
+        System.out.println("Orphans                  : elements that are not linked");
+        System.out.println("cleanup                  : check for strange characters in strings");
+        System.out.println("alt                      : vendor name alternatives");
+        System.out.println("peripherals              : peripheral settings");
+        System.out.println("address_block            : address blocks");
     }
 
     private boolean parseCommandLineParameters(String[] args)
     {
-        if(args.length < 3)
+        boolean has_host = false;
+        boolean has_user = false;
+        boolean has_password = false;
+
+        if(null == args)
         {
-            System.out.println("Usage: <database host> <db user> <db password> <verbose> <test>");
             return false;
         }
-        else
+        for(int i = 0; i < args.length; i++)
         {
-            System.out.println("host : " + args[0] + " !");
-            System.out.println("user : " + args[1] + " !");
-            System.out.println("password : " + args[2] + " !");
-            dbLocation = args[0];
-            dbUser = args[1];
-            dbPassword = args[2];
-            if(args.length > 4)
+            if(true == args[i].startsWith("-"))
             {
-                switch(args[4])
+                if(true == "-h".equals(args[i]))
                 {
-                case "all":
-                    allTests = true;
-                    break;
-
-                case "RAM":
-                    ramTest = true;
-                    allTests = false;
-                    break;
-
-                case "Orphans":
-                    orphanTest = true;
-                    allTests = false;
-                    break;
-
-                case "cleanup":
-                    stringTest = true;
-                    allTests = false;
-                    break;
-
-                case "alt":
-                    altUsageTest = true;
-                    allTests = false;
-                    break;
-
-                case "peripherals":
-                    peripheralsTest = true;
-                    allTests = false;
-                    break;
-
-                case "address_block":
-                    addressBlockTest = true;
-                    allTests = false;
-                    break;
-
-                default:
-                    System.err.println("invalid test specification (" + args[4] + ") !");
-                    allTests = false;
-                    break;
+                    return false;
                 }
+                else if(true == "-v".equals(args[i]))
+                {
+                    // already handled -> ignore
+                }
+                else if(true == "-noColour".equals(args[i]))
+                {
+                    // already handled -> ignore
+                }
+                else if(true == "-db_host".equals(args[i]))
+                {
+                    i++;
+                    if(i == args.length)
+                    {
+                        System.err.println("ERROR: missing parameter for " + args[i-1]);
+                        return false;
+                    }
+                    dbLocation = args[i];
+                    has_host = true;
+                }
+                else if(true == "-db_user".equals(args[i]))
+                {
+                    i++;
+                    if(i == args.length)
+                    {
+                        System.err.println("ERROR: missing parameter for " + args[i-1]);
+                        return false;
+                    }
+                    dbUser = args[i];
+                    has_user = true;
+                }
+                else if(true == "-db_password".equals(args[i]))
+                {
+                    i++;
+                    if(i == args.length)
+                    {
+                        System.err.println("ERROR: missing parameter for " + args[i-1]);
+                        return false;
+                    }
+                    dbPassword = args[i];
+                    has_password = true;
+                }
+                else if(true == "-test".equals(args[i]))
+                {
+                    i++;
+                    if(i == args.length)
+                    {
+                        System.err.println("ERROR: missing parameter for " + args[i-1]);
+                        return false;
+                    }
+                    switch(args[i])
+                    {
+                    case "all":
+                        allTests = true;
+                        break;
+
+                    case "RAM":
+                        ramTest = true;
+                        allTests = false;
+                        break;
+
+                    case "Orphans":
+                        orphanTest = true;
+                        allTests = false;
+                        break;
+
+                    case "cleanup":
+                        stringTest = true;
+                        allTests = false;
+                        break;
+
+                    case "alt":
+                        altUsageTest = true;
+                        allTests = false;
+                        break;
+
+                    case "peripherals":
+                        peripheralsTest = true;
+                        allTests = false;
+                        break;
+
+                    case "address_block":
+                        addressBlockTest = true;
+                        allTests = false;
+                        break;
+
+                    default:
+                        System.err.println("invalid test specification (" + args[i] + ") !");
+                        allTests = false;
+                        break;
+                    }
+                }
+                else if(true == "-dry-run".equals(args[i]))
+                {
+                    dryRun = true;
+                }
+                else if(true == "-list".equals(args[i]))
+                {
+                    listTests = true;
+                }
+                // new parameters go here
             }
+            else
+            {
+                System.err.println("Invalid option : " + args[i]);
+                return false;
+            }
+        }
+
+        if((false == has_host) || (false == has_user) || (false == has_password))
+        {
+            return false;
         }
         return true;
     }
@@ -238,7 +321,17 @@ public class CleanupMain
         Vector<BasicCheck> allTest = new Vector<BasicCheck>();
 
         DataBaseWrapper db = new DataBaseWrapper();
+        log.trace("host :{} !", dbLocation);
+        log.trace("user : {} !", dbUser);
+        log.trace("password : {} !", dbPassword);
         db.connectToDataBase(dbLocation, dbUser, dbPassword);
+
+        if(true == dryRun)
+        {
+            log.info("!!! DRY RUN !!!");
+            log.info("There wil be no information saved to the server !");
+            log.info("!!! DRY RUN !!!");
+        }
 
         if(true == allTests)
         {
@@ -281,7 +374,7 @@ public class CleanupMain
         {
             BasicCheck curCheck = allTest.get(i);
             System.out.println("Now starting test " + curCheck.getName() + " ...");
-            run = curCheck.execute();
+            run = curCheck.execute(dryRun);
             global_comparisions += curCheck.getNumberComparissons();
             global_fixes += curCheck.getFixes();
             global_inconsistencies += curCheck.getInconsistencies();
@@ -314,8 +407,8 @@ public class CleanupMain
             if(true == cm.execute())
             {
                 // OK
-                System.exit(0);
                 System.out.println("Done!");
+                System.exit(0);
             }
             else
             {
@@ -326,8 +419,16 @@ public class CleanupMain
         }
         else
         {
-            cm.printHelp();
-            System.exit(1);
+            if(true == cm.listTests)
+            {
+                cm.printListofTests();
+                System.exit(0);
+            }
+            else
+            {
+                cm.printHelp();
+                System.exit(1);
+            }
         }
     }
 

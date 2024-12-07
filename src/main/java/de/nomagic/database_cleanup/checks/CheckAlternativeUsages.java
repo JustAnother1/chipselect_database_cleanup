@@ -23,25 +23,25 @@ public class CheckAlternativeUsages extends BasicCheck
         return "alternative vendor";
     }
 
-    public boolean execute()
+    public boolean execute(boolean dryRun)
     {
         boolean run = true;
 
         if(true == run)
         {
-            run = alternativeVendor();
+            run = alternativeVendor(dryRun);
         }
 
         return run;
     }
 
-    private boolean alternativeVendor()
+    private boolean alternativeVendor(boolean dryRun)
     {
         // get all Vendors
         // find the one with Alternative != 0
         // find all microcontroller that have this vendor as vendor_id
         // set the vendor_id to the alternative.
-        System.out.println("removing links to Vendors that have an alternative...");
+        log.info("removing links to Vendors that have an alternative...");
         try
         {
             String sql = "SELECT id, alternative FROM p_vendor";
@@ -58,12 +58,19 @@ public class CheckAlternativeUsages extends BasicCheck
                     while(dev_rs.next())
                     {
                         int id = dev_rs.getInt(1);
-                        comparisons++;
-                        String sqlFix = "UPDATE microcontroller SET vendor_id = \"" + alternative + "\" WHERE id = " + id;
-                        log.trace("In db: device " + id + " changed to vendor " + alternative);
-                        log.trace("SQL: " + sqlFix);
-                        db.executeUpdate(sqlFix);
-                        fixes++;
+                        if(false == dryRun)
+                        {
+                            comparisons++;
+                            String sqlFix = "UPDATE microcontroller SET vendor_id = \"" + alternative + "\" WHERE id = " + id;
+                            log.trace("In db: device " + id + " changed to vendor " + alternative);
+                            log.trace("SQL: " + sqlFix);
+                            db.executeUpdate(sqlFix);
+                            fixes++;
+                        }
+                        else
+                        {
+                            log.info("dry run: would have changed the vendor of  microcontroller {} to {}", id, alternative);
+                        }
                     }
                 }
                 // else -> OK
