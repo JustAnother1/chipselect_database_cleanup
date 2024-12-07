@@ -3,21 +3,25 @@ package de.nomagic.database_cleanup.checks;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.nomagic.database_cleanup.DataBaseWrapper;
 
 public class RemoveOrphans extends BasicCheck
 {
+    private final Logger log = LoggerFactory.getLogger(this.getClass().getName());
 
-    public RemoveOrphans(boolean verbose, DataBaseWrapper db)
+    public RemoveOrphans(DataBaseWrapper db)
     {
-        super(verbose, db);
+        super(db);
     }
-    
-	@Override
-	public String getName() 
-	{
-		return "remove orphans";
-	}
+
+    @Override
+    public String getName()
+    {
+        return "remove orphans";
+    }
 
     @Override
     public boolean execute()
@@ -241,7 +245,7 @@ public class RemoveOrphans extends BasicCheck
     // "DELETE FROM pl_peripheral_instance WHERE dev_id = %d"           // action
 
     private boolean findUnlinkedEntries(String itemColumn, String itemTable,
-                                        String linkColumn, String linkTable, boolean log)
+                                        String linkColumn, String linkTable, boolean schouldLog)
     {
         try
         {
@@ -254,14 +258,14 @@ public class RemoveOrphans extends BasicCheck
             int i;
             int f = 0;
             int itemVal = rs_items.getInt(1);
-            if( true == log) {System.out.println("item = " + itemVal);}
+            if( true == schouldLog) {System.out.println("item = " + itemVal);}
             int linkValue = rs_links.getInt(1);
-            if( true == log) {System.out.println("link = " + linkValue);}
+            if( true == schouldLog) {System.out.println("link = " + linkValue);}
             for(i = 0; ; i++)
             {
                 if(linkValue == itemVal)
                 {
-                    if( true == log) {System.out.println("equal!");}
+                    if( true == schouldLog) {System.out.println("equal!");}
                     // this item is linked
                     rs_items.next();
                     if(rs_items.isAfterLast())
@@ -269,31 +273,28 @@ public class RemoveOrphans extends BasicCheck
                         break;
                     }
                     itemVal = rs_items.getInt(1);
-                    if( true == log) {System.out.println("item = " + itemVal);}
+                    if( true == schouldLog) {System.out.println("item = " + itemVal);}
                 }
                 else if(linkValue > itemVal)
                 {
-                    if( true == log) {System.out.println("link greater!");}
+                    if( true == schouldLog) {System.out.println("link greater!");}
                     f++;
                     rs_items.next();
                     // fix:
                     String sql = String.format("DELETE FROM %s WHERE %s = %d", itemTable, itemColumn, itemVal);
-                    if(true == verbose)
-                    {
-                        System.err.println("Unlinked Item: " + itemVal);
-                        System.out.println("Fixing by execuing: " + sql);
-                    }
+                    log.trace("Unlinked Item: {}", itemVal);
+                    log.trace("Fixing by execuing: {}", sql);
                     db.executeUpdate(sql);
                     if(rs_items.isAfterLast())
                     {
                         break;
                     }
                     itemVal = rs_items.getInt(1);
-                    if( true == log) {System.out.println("item = " + itemVal);}
+                    if( true == schouldLog) {System.out.println("item = " + itemVal);}
                 }
                 else if(linkValue < itemVal)
                 {
-                    if( true == log) {System.out.println("item greater!");}
+                    if( true == schouldLog) {System.out.println("item greater!");}
                     rs_links.next();
                     if(rs_links.isAfterLast())
                     {
@@ -302,11 +303,8 @@ public class RemoveOrphans extends BasicCheck
                             // fix:
                             f++;
                             String sql = String.format("DELETE FROM %s WHERE %s = %d", itemTable, itemColumn, itemVal);
-                            if(true == verbose)
-                            {
-                                System.err.println("Unlinked Item: " + itemVal);
-                                System.out.println("Fixing by execuing: " + sql);
-                            }
+                            log.trace("Unlinked Item: {}", itemVal);
+                            log.trace("Fixing by execuing: {}", sql);
                             db.executeUpdate(sql);
                             rs_items.next();
                             if(false == rs_items.isAfterLast())
@@ -317,7 +315,7 @@ public class RemoveOrphans extends BasicCheck
                         break;
                     }
                     linkValue = rs_links.getInt(1);
-                    if( true == log) {System.out.println("link = " + linkValue);}
+                    if( true == schouldLog) {System.out.println("link = " + linkValue);}
                 }
             }
             System.out.printf("Done %,d comparisons!\n", i);

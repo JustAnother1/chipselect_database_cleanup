@@ -3,22 +3,26 @@ package de.nomagic.database_cleanup.checks;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.nomagic.database_cleanup.DataBaseWrapper;
 import de.nomagic.database_cleanup.HexString;
 
 public class RAMandFlashSizes extends BasicCheck
 {
+    private final Logger log = LoggerFactory.getLogger(this.getClass().getName());
 
-    public RAMandFlashSizes(boolean verbose, DataBaseWrapper db)
+    public RAMandFlashSizes(DataBaseWrapper db)
     {
-        super(verbose, db);
+        super(db);
     }
-    
-	@Override
-	public String getName() 
-	{
-		return "RAM + Flash sizes";
-	}
+
+    @Override
+    public String getName()
+    {
+        return "RAM + Flash sizes";
+    }
 
     public boolean execute()
     {
@@ -87,11 +91,8 @@ public class RAMandFlashSizes extends BasicCheck
                             if(diff > 1024)
                             {
                                 inconsistencies++;
-                                if(true == verbose)
-                                {
-                                    System.err.println("Inconsistency found in " + name + " !!!");
-                                    System.out.println("RAM bytes: " + sizeByte + " (" +  hex.toString() + ") RAM kb: " + sizeKB + " difference: " + (sizeByte - bytes) + " !");
-                                }
+                                log.trace("Inconsistency found in " + name + " !!!");
+                                log.trace("RAM bytes: " + sizeByte + " (" +  hex.toString() + ") RAM kb: " + sizeKB + " difference: " + (sizeByte - bytes) + " !");
                             }
                             // else -> difference due to resolution / rounding to full kb.
                         }
@@ -164,11 +165,8 @@ public class RAMandFlashSizes extends BasicCheck
                             if(diff > 1024)
                             {
                                 inconsistencies++;
-                                if(true == verbose)
-                                {
-                                    System.err.println("Inconsistency found in " + name + " !!!");
-                                    System.out.println("FLASH bytes: " + sizeByte + " ( " + (sizeByte/1024) + "kb) FLASH kb: " + sizeKB + " difference: " + (sizeByte - bytes) + " !");
-                                }
+                                log.trace("Inconsistency found in " + name + " !!!");
+                                log.trace("FLASH bytes: " + sizeByte + " ( " + (sizeByte/1024) + "kb) FLASH kb: " + sizeKB + " difference: " + (sizeByte - bytes) + " !");
                             }
                             // else -> difference due to resolution / rounding to full kb.
                         }

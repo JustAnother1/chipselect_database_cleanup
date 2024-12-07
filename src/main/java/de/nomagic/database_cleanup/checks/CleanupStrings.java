@@ -3,21 +3,25 @@ package de.nomagic.database_cleanup.checks;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.nomagic.database_cleanup.DataBaseWrapper;
 
 public class CleanupStrings extends BasicCheck
 {
+    private final Logger log = LoggerFactory.getLogger(this.getClass().getName());
 
-    public CleanupStrings(boolean verbose, DataBaseWrapper db)
+    public CleanupStrings(DataBaseWrapper db)
     {
-        super(verbose, db);
+        super(db);
     }
-    
-	@Override
-	public String getName() 
-	{
-		return "cleanup strings";
-	}
+
+    @Override
+    public String getName()
+    {
+        return "cleanup strings";
+    }
 
     public String cleanupString(final String dirty)
     {
@@ -66,11 +70,8 @@ public class CleanupStrings extends BasicCheck
                 if(false == cleaned.equals(name))
                 {
                     String sqlFix = "UPDATE p_package SET name = \"" + cleaned + "\" WHERE id = " + id;
-                    if(true == verbose)
-                    {
-                        System.out.println("In db: _" + name + "_ cleaned : " + cleaned);
-                        System.out.println("SQL: " + sqlFix);
-                    }
+                    log.trace("In db: _" + name + "_ cleaned : " + cleaned);
+                    log.trace("SQL: " + sqlFix);
                     db.executeUpdate(sqlFix);
                     fixes++;
                 }
@@ -103,11 +104,8 @@ public class CleanupStrings extends BasicCheck
                     if(false == cleaned.equals(name))
                     {
                         String sqlFix = "UPDATE p_architecture SET name = \"" + cleaned + "\" WHERE id = " + id;
-                        if(true == verbose)
-                        {
-                            System.out.println("In db: _" + name + "_ cleaned : " + cleaned);
-                            System.out.println("SQL: " + sqlFix);
-                        }
+                        log.trace("In db: _" + name + "_ cleaned : " + cleaned);
+                        log.trace("SQL: " + sqlFix);
                         db.executeUpdate(sqlFix);
                         fixes++;
                     }

@@ -1,6 +1,5 @@
 package de.nomagic.database_cleanup;
 
-import java.util.Vector;
 
 public class RangeCheck
 {
@@ -9,8 +8,6 @@ public class RangeCheck
     private boolean out_of_bounds = false;
     private boolean overlap_error = false;
     private String errorMessage = "";
-    private Vector<String> fields = new Vector<String>();
-
 
     public RangeCheck(int size)
     {
@@ -21,7 +18,6 @@ public class RangeCheck
             used[i] = null;
         }
     }
-
 
     public void add(int start_offset, int length, String fieldName)
     {
@@ -64,7 +60,7 @@ public class RangeCheck
 
     public String getErrorMessage()
     {
-    	return errorMessage;
+        return errorMessage;
     }
 
     public boolean hasError()
@@ -79,17 +75,14 @@ public class RangeCheck
         }
     }
 
-
     public boolean hasCollision()
     {
         return overlap_error;
     }
 
-
     public boolean hasOutOfBoundsError()
     {
         return out_of_bounds;
     }
-
 
 }

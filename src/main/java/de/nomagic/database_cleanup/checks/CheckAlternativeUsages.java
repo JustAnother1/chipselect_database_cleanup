@@ -3,21 +3,25 @@ package de.nomagic.database_cleanup.checks;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.nomagic.database_cleanup.DataBaseWrapper;
 
 public class CheckAlternativeUsages extends BasicCheck
 {
+    private final Logger log = LoggerFactory.getLogger(this.getClass().getName());
 
-    public CheckAlternativeUsages(boolean verbose, DataBaseWrapper db)
+    public CheckAlternativeUsages(DataBaseWrapper db)
     {
-        super(verbose, db);
+        super(db);
     }
-    
-	@Override
-	public String getName() 
-	{
-		return "alternative vendor";
-	}
+
+    @Override
+    public String getName()
+    {
+        return "alternative vendor";
+    }
 
     public boolean execute()
     {
@@ -56,11 +60,8 @@ public class CheckAlternativeUsages extends BasicCheck
                         int id = dev_rs.getInt(1);
                         comparisons++;
                         String sqlFix = "UPDATE microcontroller SET vendor_id = \"" + alternative + "\" WHERE id = " + id;
-                        if(true == verbose)
-                        {
-                            System.out.println("In db: device " + id + " changed to vendor " + alternative);
-                            System.out.println("SQL: " + sqlFix);
-                        }
+                        log.trace("In db: device " + id + " changed to vendor " + alternative);
+                        log.trace("SQL: " + sqlFix);
                         db.executeUpdate(sqlFix);
                         fixes++;
                     }
