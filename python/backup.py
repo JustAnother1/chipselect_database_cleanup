@@ -9,9 +9,9 @@ import socket
 mariadb_connection = None
 cursor = None
 db_host = None
-db_user = 'docker_user'
-db_password = 'not_a_secret'
-db_container_name = '_cs_mysql_1'
+db_user = ''
+db_password = ''
+db_container_name = ''
 
 def connect2localDB():
     global cursor
